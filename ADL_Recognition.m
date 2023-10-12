@@ -1,6 +1,8 @@
 clc;
 clear;
 close all;
+
+%load subject 101-109 , select your needs and save as tables
 for i=1:9
     eval(['load(''/Users/dengliu2000/Documents/MATLAB/PAMAP2-Protocol/subject10',num2str(i),'.dat'');'])
     eval(['subject10',num2str(i),'_HandChestAnkle_AccGyro(:,1:3)=subject10',num2str(i),'(:,5:7);'])
@@ -11,6 +13,8 @@ for i=1:9
     eval(['subject10',num2str(i),'_HandChestAnkle_AccGyro(:,16:18)=subject10',num2str(i),'(:,45:47);'])
     eval(['subject10',num2str(i),'_HandChestAnkle_AccGyro(:,19)=subject10',num2str(i),'(:,2);'])
 end
+
+%window size, sliding point, feature table and ground table
 WS=100;
 SP=50;
 for i=1:9
@@ -31,6 +35,7 @@ for j=1:NumofWindow
 end
 end
 
+% create a table to save
 FT_GT=[];
 data_traintest_matrix=[];
 for i=1:9
@@ -41,6 +46,7 @@ for i=1:9
 
 end
 
+%leave one out cross validation, confusionmatrix(KNN, DT, NB)
 for i=1:9
     test=(data_traintest_matrix==i);
     train=~test;
@@ -55,6 +61,8 @@ for i=1:9
     eval(['confusionmatrix_KNN_',num2str(i),'=confusionmat(FT_GT_test(:,109),predictmodelKNN,''Order'',[0 1 2 3 4 5 6 7 12 13 16 17 24]);'])
     eval(['confusionmatrix_NB_',num2str(i),'=confusionmat(FT_GT_test(:,109),predictmodelNB,''Order'',[0 1 2 3 4 5 6 7 12 13 16 17 24]);'])
     eval(['confusionmatrix_DT_',num2str(i),'=confusionmat(FT_GT_test(:,109),predictmodelDT,''Order'',[0 1 2 3 4 5 6 7 12 13 16 17 24]);'])
+    
+    % calculate Acc, Sen, Pre (window by window's result)
     eval(['TotalMatrix_W1(i,1)=sum(diag(confusionmatrix_KNN_',num2str(i),'))/sum(sum(confusionmatrix_KNN_',num2str(i),'));'])
     eval(['TotalMatrix_W2(i,1)=sum(diag(confusionmatrix_NB_',num2str(i),'))/sum(sum(confusionmatrix_NB_',num2str(i),'));'])
     eval(['TotalMatrix_W3(i,1)=sum(diag(confusionmatrix_DT_',num2str(i),'))/sum(sum(confusionmatrix_DT_',num2str(i),'));'])
@@ -64,6 +72,9 @@ for i=1:9
     eval(['TotalMatrix_W1(i,3)=confusionmatrix_KNN_',num2str(i),'(i,i)/sum(confusionmatrix_KNN_',num2str(i),'(:,i));'])
     eval(['TotalMatrix_W2(i,3)=confusionmatrix_NB_',num2str(i),'(i,i)/sum(confusionmatrix_NB_',num2str(i),'(:,i));'])
     eval(['TotalMatrix_W3(i,3)=confusionmatrix_DT_',num2str(i),'(i,i)/sum(confusionmatrix_DT_',num2str(i),'(:,i));'])
+    
+    % calculate Acc, Sen, Pre (sample by sample's result), not much
+    % difference between them
     
     predictpoint_KNN=[];
     predictpoint_NB=[];
